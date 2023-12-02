@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css">
+        <link rel="stylesheet" href="node_modules/bootstrap-slider/dist/css/bootstrap-slider.css">
+        <link id="uiCSS" rel="stylesheet" href="ui.css">
+    </head>
+
+    <body style="font-size: 10pt; overflow-x:hidden; font-family: Helvetica, Arial, sans-serif;">
+        <div class="container" style="padding: 11px;">
+
+            <!-- Time -->
+            <div class="row">
+                <div style="border: #cdcdcd thin solid; margin-left: 15px; width: 543px;">
+                    <div class="row" style="margin-left: 0px;">
+                        <div class="col-12" style="text-align: center; padding-top: 5px; padding-bottom: 5px">
+                            <span style="font-size: 25px; font-family: &apos;Lucida Console&apos;, Monaco, monospace">
+                                <div id="time-display" style="display: inline-block;" class="grey"></div>
+                                <div id="timezone-label" style="display: inline-block;" class="grey"></div>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row" style="margin-top: 8px;">
+                <div style="border: #cdcdcd thin solid; margin-left: 15px; width: 543px;">
+                    <div class="row" style="margin-top: 5px;">
+                        <div class="col-6" style="text-align: left;">
+                            <span id="id-label" style="margin-left: 20px;" class="grey">Device ID:</span>
+                        </div>
+                        <div class="col-6" style="text-align: right;">
+                            <span id="id-display" style="margin-right: 20px; border: none; text-align: right;" class="grey">-</span>
+                        </div>
+                    </div>
+                    <div class="row" style="margin-top: 5px;">
+                        <div class="col-6" style="text-align: left;">
+                            <span id="firmware-description-label" style="margin-left: 20px;" class="grey">Firmware description:</span>
+                        </div>
+                        <div class="col-6" style="text-align: right;">
+                            <span id="firmware-description-display" style="margin-right: 20px;" class="grey">-</span>
+                        </div>
+                    </div>
+                    <div class="row" style="margin-top: 5px;">
+                        <div class="col-6" style="text-align: left;">
+                            <span id="firmware-version-label" style="margin-left: 20px;" class="grey">Firmware version:</span>
+                        </div>
+                        <div class="col-6" style="text-align: right;">
+                            <span id="firmware-version-display" style="margin-right: 20px;" class="grey">-</span>
+                        </div>
+                    </div>
+                    <div class="row" style="margin-top: 5px; margin-bottom: 5px;">
+                        <div class="col-6" style="text-align: left;">
+                            <span id="battery-label" style="margin-left: 20px;" class="grey">Battery:</span>
+                        </div>
+                        <div class="col-6" style="text-align: right;">
+                            <span id="battery-display" style="margin-right: 20px;" class="grey">-</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabs -->
+            <div class="row" style="margin-top: 8px;">
+                <ul class="nav nav-tabs nav-justified" style="width: 100%; font-size: 10pt; font-family: Helvetica, Arial, sans-serif;">                    
+                    <li class="nav-item" style="margin-left: 10px; margin-right: 10px;">
+                        <a class="nav-link active" data-toggle="tab" href="#settings-tab" id="settings-tab-link">Recording</a>
+                    </li>
+
+                    <li class="nav-item" style="margin-right: 10px;">
+                        <a class="nav-link" data-toggle="tab" href="#schedule-tab" id="schedule-tab-link">Schedule</a>
+                    </li>
+
+                    <li class="nav-item" style="margin-right: 10px;">
+                        <a class="nav-link" data-toggle="tab" href="#filtering-tab" id="filter-tab-link">Filtering</a>
+                    </li>
+
+                    <li class="nav-item" style="margin-right: 10px;">
+                        <a class="nav-link" data-toggle="tab" href="#advanced-tab" id="device-tab-link">Advanced</a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Tab content -->
+            <div class="tab-content" style="margin-top: 4px;">
+            
+                <div role="tabpanel" class="tab-pane fade in active show" id="settings-tab" role="tabpanel">
+                    <div id="settings-content"></div> 
+                </div>
+
+                <div role="tabpanel" class="tab-pane fade in" id="schedule-tab" role="tabpanel">
+                    <div id="schedule-content"></div> 
+                </div>
+
+                <div role="tabpanel" class="tab-pane fade in" id="filtering-tab" role="tabpanel">
+                    <div id="filtering-content"></div> 
+                </div>
+
+                <div role="tabpanel" class="tab-pane fade in" id="advanced-tab" role="tabpanel">
+                    <div id="advanced-content"></div> 
+                </div>
+            
+            </div>
+
+            <div class="fixed-bottom" style="padding: 11px; padding-top: 8px;">
+
+                <!-- Lifespan -->
+                <div style="border: #cdcdcd thin solid; width: 100%; margin-bottom: 8px;">
+                    <div class="row" style="margin-top: 5px; margin-bottom: 5px;">
+                        <div class="col-12" id="life-display-holder" style="height: 40px;">
+                            <label id="life-display-panel" style="width: 100%; resize:none; text-align: center; font-weight: normal;">Each day this will produce 0 files, totalling 0 MB.<br/>Daily energy consumption will be approximately 0 mAh.</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Apply configuration -->
+                <div style="width: 100%;">
+                    <div class="row">
+                        <div class="col-12">
+                            <button id="configure-button" class="btn btn-success" style="width: 100%;" disabled>Configure AudioMoth</button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </body>
+
+    <script>
+        window.jQuery = window.$ = require('jquery');
+        $("#schedule-content").load('./schedule/schedule.html');
+        $("#settings-content").load('./settings/settings.html');
+        $("#filtering-content").load('./settings/filtering.html');
+        $("#advanced-content").load('./settings/advanced.html');
+    </script>
+    <script src="./node_modules/bootstrap/dist/js/bootstrap.bundle.js"></script>
+    <script src="uiIndex.js" charset="utf-8"></script>
+
+</html>

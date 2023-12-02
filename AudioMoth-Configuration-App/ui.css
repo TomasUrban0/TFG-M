@@ -1,0 +1,33 @@
+input[type=number]::-webkit-inner-spin-button, 
+input[type=number]::-webkit-outer-spin-button { 
+  -webkit-appearance: none; 
+  margin: 0; 
+}
+
+*, *::after, *::before {
+	-webkit-user-select: none;
+	-webkit-user-drag: none;
+	-webkit-app-region: no-drag;
+	cursor: default;
+}
+
+.table>tbody>tr>td,
+.table>tbody>tr>th {
+  border-top: none;
+}
+
+body {
+  background: #FFFFFF;
+}
+
+.slider-selection {
+  background: rgb(173, 189, 241);
+}
+
+#disabled-filter-slider .slider-handle {
+  display: none;
+}
+
+.grey {
+  color: #D3D3D3;
+}
