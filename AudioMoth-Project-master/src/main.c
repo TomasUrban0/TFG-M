@@ -2048,22 +2048,21 @@ inline void AudioMoth_usbApplicationPacketReceived(uint32_t messageType, uint8_t
     externalStruct_t externalStruct;
 
     // Calculate the size of the externalStruct_t structure and persistentConfigSettings_t
-    uint32_t numberOfBytesExternal = ROUND_UP_TO_MULTIPLE(sizeof(externalStruct_t), UINT32_SIZE_IN_BYTES);
-    uint32_t numberOfBytesPersistent = ROUND_UP_TO_MULTIPLE(sizeof(persistentConfigSettings_t), UINT32_SIZE_IN_BYTES);
+    uint32_t numberOfBytesExternal = sizeof(externalStruct_t);
+    uint32_t numberOfBytesPersistent = sizeof(persistentConfigSettings_t);
 
-    // Allocate a buffer large enough to hold both structures
-    uint8_t* buffer = malloc(numberOfBytesExternal + numberOfBytesPersistent);
+    // Define a static buffer large enough to hold both structures
+    // Use the exact number of bytes required for both structures
+    uint8_t buffer[numberOfBytesExternal + numberOfBytesPersistent];
 
     // Copy the externalStruct into the first part of the buffer and persistentConfigSettings into the second
     memcpy(buffer, &externalStruct, numberOfBytesExternal);
     memcpy(buffer + numberOfBytesExternal, &persistentConfigSettings, numberOfBytesPersistent);
 
-    // Write the buffer to flash memory, check if it was successful and free the buffer
+    // Write the buffer to flash memory and check if it was successful
     bool success = AudioMoth_writeToFlashUserDataPage(buffer, sizeof(buffer));
-    free(buffer);  
 
     if (success) {
-
         /* Copy the USB packet contents to the back-up register data structure location */
 
         copyToBackupDomain((uint32_t*)configSettings,  (uint8_t*)&persistentConfigSettings.configSettings, sizeof(configSettings_t));
