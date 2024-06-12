@@ -1296,7 +1296,6 @@ int setupCmd(const USB_Setup_TypeDef *setup) {
 
 }
 
-#define FILENAME "C:\\Users\\ma2mo\\OneDrive\\Escritorio\\losDatos.txt"
 
 // Function to write the buffer to a file
 /*static bool writeToTextFile(const uint8_t *buffer, uint32_t length) {
@@ -1344,6 +1343,15 @@ void handleUSBPacket() {
 
     AM_batteryState_t batteryState;
 
+    // AudioMoth_openFile("receiveBuffer.txt");
+    // AudioMoth_writeToFile(&receiveBuffer, (AM_USB_BUFFERSIZE));
+    // AudioMoth_closeFile();
+
+    // AudioMoth_openFile("message.txt");
+    // AudioMoth_writeToFile(receiveBuffer, AM_USB_BUFFERSIZE);
+    // AudioMoth_closeFile();
+    
+
     switch(receivedMessageType) {
 
         case AM_USB_MSG_TYPE_SET_STATION_ID:
@@ -1351,35 +1359,30 @@ void handleUSBPacket() {
             stationId = receiveBuffer[1];
 
             // Copiar los primeros tres bytes de receiveBuffer a transmitBuffer
-            memcpy(transmitBuffer , receiveBuffer , 2);
+            memcpy(transmitBuffer , receiveBuffer , 2);            
 
             // Definir y obtener la longitud del buffer recibido
-            int length = (2);
+            int length = 2;
 
             // Nombre del archivo
             char *filename = "miArchivo.txt"; // Cambia esto por el nombre que prefieras
 
-            // Crear o abrir el archivo
-            FIL file;
-            FRESULT res = f_open(&file, filename, FA_CREATE_ALWAYS | FA_WRITE);
-            if (res != FR_OK) {
-                // No se pudo crear o abrir el archivo
-                break;
-            }
+            // Abrir el archivo
+            AudioMoth_openFile(filename);
 
             // Escribir paquete completo a fichero
-            UINT bw;
-            res = f_write(&file, receiveBuffer, length, &bw);
-            if (res != FR_OK || bw != length) {
+            bool writeSuccess = AudioMoth_writeToFile(receiveBuffer, length);
+            if (!writeSuccess) {
                 // No se pudo escribir en el archivo
-                f_close(&file);
+                AudioMoth_closeFile();
                 break;
             }
 
             // Cerrar el archivo
-            f_close(&file);
+            AudioMoth_closeFile();
 
             break;
+
 
 
 

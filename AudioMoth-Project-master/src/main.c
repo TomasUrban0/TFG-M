@@ -1771,6 +1771,7 @@ int main(void) {
 
     }
 
+   
 }
 
 /* Time zone handler */
@@ -2017,9 +2018,12 @@ inline void AudioMoth_usbApplicationPacketRequested(uint32_t messageType, uint8_
 
 }
 
+// Primero, declara una nueva variable para la copia
+static uint8_t* persistentConfigSettingsCopy __attribute__ ((aligned(UINT32_SIZE_IN_BYTES)));
+
+
 inline void AudioMoth_usbApplicationPacketReceived(uint32_t messageType, uint8_t* receiveBuffer, uint8_t *transmitBuffer, uint32_t size) {
 
-    
     /* Make persistent configuration settings data structure */
 
     static persistentConfigSettings_t persistentConfigSettings __attribute__ ((aligned(UINT32_SIZE_IN_BYTES)));
@@ -2040,12 +2044,31 @@ inline void AudioMoth_usbApplicationPacketReceived(uint32_t messageType, uint8_t
 
     }
 
-    // /* Copy persistent configuration settings to flash */
-    // uint32_t numberOfBytes = ROUND_UP_TO_MULTIPLE(sizeof(persistentConfigSettings_t), UINT32_SIZE_IN_BYTES);
-    // bool success = AudioMoth_writeToFlashUserDataPage((uint8_t*)&persistentConfigSettings, numberOfBytes);
+    // Luego, usa memcpy para copiar los datos de persistentConfigSettings a persistentConfigSettingsCopy
+    memcpy(&persistentConfigSettingsCopy, &receiveBuffer, sizeof(receiveBuffer));
 
     // Define an instance of the externalStruct_t structure
     externalStruct_t externalStruct;
+
+    bool es11 = false;
+    int pos_icion = 0;
+
+    for (uint32_t i = 0; i < size; i++) {
+        if (receiveBuffer[i] == '\v') {
+            pos_icion = i;
+            break;  // Salir del bucle una vez que se encuentra el carácter
+        }
+    }
+
+    // Check if the character at position pos_icion of receiveBuffer is U+000B (vertical tab)
+    if (receiveBuffer[pos_icion] == '\v') {
+        // If it is, store the next byte in externalStruct
+        externalStruct.appStateId = receiveBuffer[pos_icion+1];
+        es11 = true;
+    } else {
+        // If it's not, set externalStruct to 0
+        externalStruct.appStateId = 0;
+    }
 
     // Calculate the size of the externalStruct_t structure and persistentConfigSettings_t
     uint32_t numberOfBytesExternal = sizeof(externalStruct_t);
@@ -2085,7 +2108,21 @@ inline void AudioMoth_usbApplicationPacketReceived(uint32_t messageType, uint8_t
 
         /* Set the time */
 
-        AudioMoth_setTime(configSettings->time, USB_CONFIG_TIME_CORRECTION);
+        
+
+        if (es11){
+
+            /* Read data from flash memory */
+            uint8_t bufferFromFlash[numberOfBytesExternal + numberOfBytesPersistent];
+            // Puntero a la dirección de memoria flash donde se almacenaron los datos
+            uint8_t *flashAddress = (uint8_t*)AM_FLASH_USER_DATA_ADDRESS;
+
+            // Copia los datos de la memoria flash al buffer de datos
+            memcpy(bufferFromFlash, flashAddress,  sizeof(bufferFromFlash));
+        } else {
+            AudioMoth_setTime(configSettings->time, USB_CONFIG_TIME_CORRECTION);
+        }
+        
 
     } else {
 
@@ -2096,6 +2133,7 @@ inline void AudioMoth_usbApplicationPacketReceived(uint32_t messageType, uint8_t
     }
 
 }
+
 
 /* Audio configuration handlers */
 
@@ -2212,22 +2250,26 @@ static void encodeCompressionBuffer(uint32_t numberOfCompressedBuffers) {
 /* Generate foldername and filename from time */
 
 static void generateFolderAndFilename(char *foldername, char *filename, uint32_t timestamp, bool prefixFoldername, bool triggeredRecording) {
+
+    // Leer solo el primer byte de la memoria flash
+    uint8_t firstByteFromFlash;
+    // Puntero a la dirección de memoria flash donde se almacenaron los datos
+    uint8_t *flashAddress = (uint8_t*)AM_FLASH_USER_DATA_ADDRESS;
+
+    // Copia el primer byte de la memoria flash al buffer de datos
+    memcpy(&firstByteFromFlash, flashAddress, 1);  // Solo copia 1 byte
+
     struct tm time;
     time_t rawTime = timestamp + configSettings->timezoneHours * SECONDS_IN_HOUR + configSettings->timezoneMinutes * SECONDS_IN_MINUTE;
     gmtime_r(&rawTime, &time);
 
-    sprintf(foldername, "%04d%02d%02d", YEAR_OFFSET + time.tm_year, MONTH_OFFSET + time.tm_mon, time.tm_mday);
-
-    uint32_t length = prefixFoldername ? sprintf(filename, "%s/", foldername) : 0;
-
-    // Agregar el prefijo del identificador único al nombre del archivo
-    char serialNumberPrefix[18]; // 16 caracteres hexadecimales + el carácter nulo
-    sprintf(serialNumberPrefix, "%08X%08X", FORMAT_SERIAL_NUMBER(SERIAL_NUMBER));
-    length += sprintf(filename + length, "%s_%s_%02d%02d%02d", serialNumberPrefix, foldername, time.tm_hour, time.tm_min, time.tm_sec);
+    // Formatea el nombre del archivo con el ID de la memoria flash, la fecha y la hora
+    sprintf(filename, "%02X_%04d-%02d-%02d_%02d-%02d-%02d", firstByteFromFlash, YEAR_OFFSET + time.tm_year, MONTH_OFFSET + time.tm_mon, time.tm_mday, time.tm_hour, time.tm_min, time.tm_sec);
 
     char *extension = triggeredRecording ? "T.WAV" : ".WAV";
-    strcpy(filename + length, extension);
+    strcat(filename, extension);
 }
+
 
 
 

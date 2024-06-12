@@ -969,3 +969,20 @@ ipcMain.on('set-amplitude-threshold-scale', (event, index) => {
     scaleMenuItems[index].checked = true;
 
 });
+
+const fs = require('fs');
+
+// Cuando se recibe el stationId del proceso de renderizado, guárdalo en un archivo de configuración
+ipcMain.on('save-station-id', (event, stationId) => {
+
+    try {
+
+        fs.writeFileSync('ficheroDeConfig.json', JSON.stringify({stationId: stationId}));
+
+    } catch (err) {
+
+        console.error('Error writing to config.json:', err);
+
+    }
+
+});

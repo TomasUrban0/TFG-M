@@ -91,23 +91,6 @@ function bytesToHexString (bytes) {
 
 }
 
-function setAudiomothID(idEstado) {
-  // Crear el paquete de datos
-  const packet = new Uint8Array(3);
-  packet[0] = 0; // Primer valor es un 0
-  packet[1] = 0x06; // Segundo valor es un byte con la etiqueta del paquete (0x06 para AM_USB_MSG_TYPE_SET_APP_PACKET)
-  packet[2] = idEstado & 0xFF; // Tercer valor es el ID de estado
-
-  // Enviar el paquete al dispositivo AudioMoth
-  audiomoth.setPacket(packet, function (err, data) {
-    if (err) {
-      console.error('Error al enviar el paquete:', err, '\nLo que se ha enviado:', packet);
-    } else {
-      console.log('Respuesta del dispositivo:', data, '\nLo que se ha enviado:', packet);
-    }
-  });
-}
-
 /* Compare two semantic versions and return true if older */
 
 function isOlderSemanticVersion(aVersion, bVersion) {
@@ -514,7 +497,7 @@ function sendPacket(packet) {
     });
 
 }
-
+  
 function configureDevice() {
 
     communicating = true;
@@ -971,7 +954,6 @@ function configureDevice() {
 
 }
 
-
 /* Initialise device information displays */
 
 function initialiseDisplay() {
@@ -1389,19 +1371,34 @@ function setStationId() {
             if (!isNaN(id)) {
 
                 stationId = id;
-                ipcRenderer.send('set-station-id', stationId);
 
-                audiomoth.setAudiomothID(stationId, function (err, data) {
+                // Mostrar el ID en la consola del configurador
+                console.log('ID de la estación recibido:', stationId);
+
+                // Crear el paquete de datos
+                const packet = new Uint8Array(3);
+                packet[0] = 0; // Primer valor es un 0
+                packet[1] = 0x0B; // Segundo valor es un byte con la etiqueta del paquete (0x06 para AM_USB_MSG_TYPE_SET_APP_PACKET)
+                packet[2] = stationId & 0xFF; // Tercer valor es el ID de estado
+
+                console.log('audiomothPacketData:', packet);
+
+                // Enviar el paquete al dispositivo AudioMoth
+                audiomoth.setPacket(packet, function (err, data) {
 
                     if (err) {
 
-                        console.error('Error:', err);
+                        console.error('Error al enviar el paquete:', err, '\nLo que se ha enviado:', packet);
 
-                    } /* else {
-                        console.log('Respuesta del dispositivo:', data);
-                    } */
+                    } else {
+
+                        console.log('Respuesta del dispositivo:', data, '\nLo que se ha enviado:', packet);
+
+                    }
 
                 });
+
+                ipcRenderer.send('set-station-id', stationId);
 
             }
 
