@@ -1,4 +1,4 @@
-# TFG-Modificaciones configurador y firmware 
+# TFG-Modificaciones_configurador_y_firmware 
 
 Este es el repositorio del TFG de Miguel Ángel Montero, donde se almacenan las modificaciones realizadas al configurador del AudioMoth y su firmware, además de la aplicación que envía comandos a la Orange Pi y los scripts que se ejecutan en la Orange Pi.
 
